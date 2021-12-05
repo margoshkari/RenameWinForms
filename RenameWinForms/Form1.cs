@@ -42,7 +42,7 @@ namespace RenameWinForms
         }
         private void FoundFiles()
         {
-            if(foundFiles.Count > 0)
+            if (foundFiles.Count > 0)
             {
                 Rename();
             }
@@ -54,7 +54,7 @@ namespace RenameWinForms
             List<string> files = new List<string>();
             Task.Factory.StartNew(() =>
             {
-                if(this.oldNameTB.Text == this.newNameTB.Text)
+                if (this.oldNameTB.Text == this.newNameTB.Text)
                 {
                     MessageBox.Show("Names must not match!");
                 }
@@ -62,28 +62,24 @@ namespace RenameWinForms
                 {
                     foreach (var item in Environment.GetLogicalDrives())
                     {
-                        if(item.Contains("D"))
+                        this.searchLabel.Invoke((MethodInvoker)(() => this.searchLabel.Text = $"Searching in {item}"));
+                        files = getFilesInDir(item);
+                        this.progressBar1.Invoke((MethodInvoker)(() => this.progressBar1.Value = 0));
+                        this.progressBar1.Invoke((MethodInvoker)(() => this.progressBar1.Maximum = files.Count() + 1));
+                        this.allFilesLabel.Invoke((MethodInvoker)(() => this.allFilesLabel.Text = $"{this.progressBar1.Maximum} files"));
+                        foreach (var elem in files)
                         {
-                            this.searchLabel.Invoke((MethodInvoker)(() => this.searchLabel.Text = $"Searching in {item}"));
-                            files = getFilesInDir(item);
-                            this.progressBar1.Invoke((MethodInvoker)(() => this.progressBar1.Value = 0));
-                            this.progressBar1.Invoke((MethodInvoker)(() => this.progressBar1.Maximum = files.Count() + 1));
-                            this.allFilesLabel.Invoke((MethodInvoker)(() => this.allFilesLabel.Text = $"{this.progressBar1.Maximum} files"));
-                            foreach (var elem in files)
+                            this.progressBar1.Invoke((MethodInvoker)(() => this.progressBar1.Value += this.progressBar1.Step));
+                            this.currentLabel.Invoke((MethodInvoker)(() => this.currentLabel.Text = $"{this.progressBar1.Value} files"));
+                            if (Path.GetFileName(elem) == this.oldNameTB.Text)
                             {
-                                this.progressBar1.Invoke((MethodInvoker)(() => this.progressBar1.Value += this.progressBar1.Step));
-                                this.currentLabel.Invoke((MethodInvoker)(() => this.currentLabel.Text = $"{this.progressBar1.Value} files"));
-                                if (Path.GetFileName(elem) == this.oldNameTB.Text)
-                                {
-                                    foundFiles.Add(elem);
-                                }
-                                else if (Path.GetFileNameWithoutExtension(elem) == this.oldNameTB.Text)
-                                {
-                                    foundFiles.Add(elem);
-                                }
+                                foundFiles.Add(elem);
+                            }
+                            else if (Path.GetFileNameWithoutExtension(elem) == this.oldNameTB.Text)
+                            {
+                                foundFiles.Add(elem);
                             }
                         }
-                        
                     }
                 }
                 else
@@ -110,7 +106,7 @@ namespace RenameWinForms
                     File.Move(item, $@"{Path.GetDirectoryName(item)}\{this.newNameTB.Text}{Path.GetExtension(item)}");
                     MessageBox.Show("File renamed!");
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message);
                 }
